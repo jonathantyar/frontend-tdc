@@ -51,8 +51,19 @@ export async function request<T>(config: AxiosRequestConfig): Promise<ApiRespons
 
 export async function authorizedRequest<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
   //* Intercept user authorization
-  const type = localStorage.getItem('_auth_type') ?? ''
-  const auth = localStorage.getItem('_auth') ?? ''
+  let type = localStorage.getItem('_auth_type') ?? ''
+  let auth = localStorage.getItem('_auth') ?? ''
+
+
+  async function checkAuth() {
+    if (auth === '') {
+      await setTimeout(async function() {
+        auth = localStorage.getItem('_auth') ?? '';
+        await checkAuth();
+      }, 1000);
+    }
+  }
+  await checkAuth();
 
   config.headers = {
     'Authorization': type + auth
