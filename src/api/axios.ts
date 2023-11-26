@@ -53,6 +53,9 @@ export async function authorizedRequest<T>(config: AxiosRequestConfig): Promise<
   //* Intercept user authorization
   const type = localStorage.getItem('_auth_type') ?? ''
   const auth = localStorage.getItem('_auth') ?? ''
+  if (type === '') {
+    throw new Error('unauthenticated request')
+  }
 
   config.headers = {
     'Authorization': type + auth
