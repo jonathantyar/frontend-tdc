@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { userRequest, userResponse } from '../../types/user';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { fetchStoreUser, fetchUpdateUser } from '../../api/v1/user';
@@ -12,12 +12,22 @@ interface UserFormProps {
 const UserForm: React.FC<UserFormProps> = (props: UserFormProps) => {
   const [passwordDisabled, setPasswordDisabled] = useState(true);
   const type = props.user !== undefined ? 'edit' : 'add';
-  const title = props.user !== undefined ? 'Edit User' + props.user.name : 'Add User';
+  const title = props.user !== undefined ? 'Edit User ' + props.user.name : 'Add User';
   const initialValues: userRequest = {
     email: props.user?.email ?? '',
     name: props.user?.name ?? '',
     password: '',
   };
+  
+  useEffect(() => {
+    if (type === 'add') {
+      setPasswordDisabled(false)
+    }
+  
+    return () => {
+    }
+  }, [passwordDisabled, type])
+  
 
   const handleFetchStore = async (payload: userRequest) => {
     const res = await fetchStoreUser(payload);
@@ -45,6 +55,23 @@ const UserForm: React.FC<UserFormProps> = (props: UserFormProps) => {
 
   const handlePasswordCheckboxChange = () => {
     setPasswordDisabled(!passwordDisabled);
+  };
+
+  const validateName = (value: string) => {
+    let error;
+    if (!value) {
+      error = 'Name is required';
+    }     
+    return error;
+  };
+
+  const validateEmail = (value: string) => {
+    let error;
+
+    if (!value) {
+      error = 'Email is required';
+    }     
+    return error;
   };
 
   const validatePassword = (value: string) => {
@@ -78,6 +105,7 @@ const UserForm: React.FC<UserFormProps> = (props: UserFormProps) => {
               name="name"
               placeholder="Enter your name"
               className="appearance-none border rounded w-100 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              validate={validateName}
             />
             <ErrorMessage
               name="name"
@@ -99,6 +127,7 @@ const UserForm: React.FC<UserFormProps> = (props: UserFormProps) => {
                 name="email"
                 placeholder="Enter your email"
                 className={`appearance-none border rounded w-100 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+                validate={validateEmail}
               />
             </div>
             <ErrorMessage
@@ -115,11 +144,15 @@ const UserForm: React.FC<UserFormProps> = (props: UserFormProps) => {
               Password
             </label>
             <div className="flex">
-              <input
-                type="checkbox"
-                className="mr-2"
-                onChange={handlePasswordCheckboxChange}
-              />
+              {
+                type === 'edit' ? (
+                  <input
+                    type="checkbox"
+                    className="mr-2"
+                    onChange={handlePasswordCheckboxChange}
+                  />
+                ) : ''
+              }
               <Field
                 type="password"
                 id="password"

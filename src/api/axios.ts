@@ -1,6 +1,9 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { toast } from 'react-toastify'
 
+let bufferToken: string
+let bufferType: string
+
 export interface ApiResponse<T> {
   status:         number;
   message:        string;
@@ -54,16 +57,20 @@ export async function authorizedRequest<T>(config: AxiosRequestConfig): Promise<
   let type = localStorage.getItem('_auth_type') ?? ''
   let auth = localStorage.getItem('_auth') ?? ''
 
-
   async function checkAuth() {
     if (auth === '') {
       await setTimeout(async function() {
         auth = localStorage.getItem('_auth') ?? '';
         await checkAuth();
-      }, 1000);
+      }, 5000);
     }
   }
   await checkAuth();
+
+  if (auth === '') {
+    type = bufferType
+    auth = bufferToken
+  }
 
   config.headers = {
     'Authorization': type + auth
@@ -71,4 +78,9 @@ export async function authorizedRequest<T>(config: AxiosRequestConfig): Promise<
 
   //* Request
   return request(config)
+}
+
+export function updateBufferToken(type: string, token: string) {
+  bufferToken = token
+  bufferType = type
 }

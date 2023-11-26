@@ -4,6 +4,7 @@ import { fetchLogin } from '../api/auth';
 import { useSignIn, useIsAuthenticated } from 'react-auth-kit';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { updateBufferToken } from '../api/axios';
 
 const SignInPage: React.FC = () => {
   const signIn = useSignIn();
@@ -22,6 +23,7 @@ const SignInPage: React.FC = () => {
         password: values.password,
       })
       if (res !== undefined) {
+        updateBufferToken('Bearer', res.token)
         signIn({
           token: res.token,
           tokenType: 'Bearer',
